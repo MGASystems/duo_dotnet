@@ -6,13 +6,8 @@
  */
 
 using System;
-using System.IO;
-using System.Net;
-using System.Web;
-using System.Text;
-using System.Collections;
-using System.Collections.Generic;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace Duo
 {
@@ -94,8 +89,8 @@ namespace Duo
 		/// <returns>authenticated username, or null</returns>
 		public static string VerifyResponse(string ikey, string skey, string akey, string sig_response, DateTime? current_time=null)
 		{
-			string auth_user = null;
-			string app_user = null;
+			string auth_user;
+			string app_user;
 
 			DateTime current_time_value = current_time ?? DateTime.UtcNow;
 
@@ -117,23 +112,23 @@ namespace Duo
 			return auth_user;
 		}
 
-		private static string SignVals(string key, string username, string ikey, string prefix, Int64 expire, DateTime current_time)
+		private static string SignVals(string key, string username, string ikey, string prefix, long expire, DateTime current_time)
 		{
 
-			Int64 ts = (Int64) (current_time - new DateTime(1970, 1, 1)).TotalSeconds;
+			long ts = (long) (current_time - new DateTime(1970, 1, 1)).TotalSeconds;
 			expire = ts + expire;
 
-			string val = username + "|" + ikey + "|" + expire.ToString();
-			string cookie = prefix + "|" + Encode64(val);
+			string val = $"{username}|{ikey}|{expire}";
+			string cookie = $"{prefix}|{Encode64(val)}";
 
 			string sig = HmacSign(key, cookie);
 
-			return cookie + "|" + sig;
+			return $"{cookie}|{sig}";
 		}
 
 		private static string ParseVals(string key, string val, string prefix, string ikey, DateTime current_time)
 		{
-			Int64 ts = (int) (current_time - new DateTime(1970, 1, 1)).TotalSeconds;
+			long ts = (int) (current_time - new DateTime(1970, 1, 1)).TotalSeconds;
 
 			string[] parts = val.Split('|');
 			if (parts.Length != 3) {
@@ -191,12 +186,12 @@ namespace Duo
 		private static string Encode64(string plaintext)
 		{
 			byte[] plaintext_bytes = _encoding.GetBytes(plaintext);
-			return System.Convert.ToBase64String(plaintext_bytes);
+			return Convert.ToBase64String(plaintext_bytes);
 		}
 
 		private static string Decode64(string encoded)
 		{
-			byte[] plaintext_bytes = System.Convert.FromBase64String(encoded);
+			byte[] plaintext_bytes = Convert.FromBase64String(encoded);
 			return _encoding.GetString(plaintext_bytes);
 		}
 	}

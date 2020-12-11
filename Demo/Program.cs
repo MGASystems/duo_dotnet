@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Configuration;
+using System.IO;
 using System.Net;
+using Duo;
 
 namespace duo_csharp
 {
@@ -15,7 +17,7 @@ namespace duo_csharp
         static void Main(string[] args)
         {
             ParseConfiguration();
-            WebServer server = new WebServer(SendResponse, String.Format("http://localhost:{0}/", port));
+            WebServer server = new WebServer(SendResponse, $"http://localhost:{port}/");
             server.Run();
             PrintStartupMessaging();
             Console.ReadKey();
@@ -26,7 +28,7 @@ namespace duo_csharp
         {
             Console.WriteLine("Server has been started.");
             Console.WriteLine("Visit the root URL with a 'user' argument, e.g.");
-            Console.WriteLine(String.Format("'http://localhost:{0}/?user=myname'.", port));
+            Console.WriteLine($"'http://localhost:{port}/?user=myname'.");
             Console.WriteLine("Press any key to quit.");
         }
 
@@ -41,7 +43,7 @@ namespace duo_csharp
 
         public static string SendResponse(HttpListenerRequest request)
         {
-            if (String.Compare(request.HttpMethod, "POST", true) == 0)
+            if (string.Compare(request.HttpMethod, "POST", true) == 0)
             {
                 return doPost(request);
             }
@@ -50,42 +52,44 @@ namespace duo_csharp
 
         private static string doPost(HttpListenerRequest request)
         {
-            using (System.IO.Stream body = request.InputStream)
+            using (Stream body = request.InputStream)
             {
-                using (System.IO.StreamReader reader = new System.IO.StreamReader(body, request.ContentEncoding))
+                using (StreamReader reader = new StreamReader(body, request.ContentEncoding))
                 {
-                    String bodyStream = reader.ReadToEnd();
+                    string bodyStream = reader.ReadToEnd();
                     var form = bodyStream.Split('=');
-                    var sig_response_val = System.Net.WebUtility.UrlDecode(form[1]);
-                    String responseUser = Duo.Web.VerifyResponse(ikey, skey, akey, sig_response_val);
-                    if (String.IsNullOrEmpty(responseUser))
+                    var sig_response_val = WebUtility.UrlDecode(form[1]);
+                    string responseUser = Web.VerifyResponse(ikey, skey, akey, sig_response_val);
+
+                    if (string.IsNullOrEmpty(responseUser))
                     {
                         return "Did not authenticate with Duo.";
                     }
-                    else
-                    {
-                        return String.Format("Authenticated with Duo as {0}.", responseUser);
-                    }
+
+                    return $"Authenticated with Duo as {responseUser}.";
                 }
             }
         }
 
         private static string doGet(HttpListenerRequest request)
         {
-            String response = String.Empty;
+            string response;
 
             try
             {
-                response = System.IO.File.ReadAllText(System.IO.Path.GetFileName(request.RawUrl));
+                response = File.ReadAllText(Path.GetFileName(request.RawUrl));
             }
-            catch (Exception e)
+            catch
             {
-                String userName = request.QueryString.Get("user");
-                if (String.IsNullOrEmpty(userName))
-                    return String.Format("You must include a user to authenticate with Duo");
+                string userName = request.QueryString.Get("user");
+                
+                if (string.IsNullOrEmpty(userName))
+                {
+                    return "You must include a user to authenticate with Duo";
+                }
 
-                var sig_request = Duo.Web.SignRequest(ikey, skey, akey, userName);
-                response = String.Format(@"<html>
+                var sig_request = Web.SignRequest(ikey, skey, akey, userName);
+                response = $@"<html>
                   <head>
                     <title>Duo Authentication</title>
                     <meta name='viewport' content='width=device-width, initial-scale=1'>
@@ -98,11 +102,11 @@ namespace duo_csharp
                     <iframe id='duo_iframe'
                             title='Two-Factor Authentication'
                             frameborder='0'
-                            data-host='{0}'
-                            data-sig-request='{1}'>
+                            data-host='{host}'
+                            data-sig-request='{sig_request}'>
                     </iframe>
                   </body>
-                </html>", host, sig_request);
+                </html>";
             }
 
             return response;
