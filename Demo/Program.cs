@@ -59,7 +59,7 @@ namespace duo_csharp
                     string bodyStream = reader.ReadToEnd();
                     var form = bodyStream.Split('=');
                     var sig_response_val = WebUtility.UrlDecode(form[1]);
-                    string responseUser = Web.VerifyResponse(ikey, skey, akey, sig_response_val);
+                    string responseUser = DuoWeb.VerifyResponse(ikey, skey, akey, sig_response_val);
 
                     if (string.IsNullOrEmpty(responseUser))
                     {
@@ -88,7 +88,7 @@ namespace duo_csharp
                     return "You must include a user to authenticate with Duo";
                 }
 
-                var sig_request = Web.SignRequest(ikey, skey, akey, userName);
+                var sig_request = DuoWeb.SignRequest(ikey, skey, akey, userName);
                 response = $@"<html>
                   <head>
                     <title>Duo Authentication</title>

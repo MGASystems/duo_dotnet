@@ -1,5 +1,5 @@
 ﻿/*
-This simple Web Server was pulled from https://codehosting.net/blog/BlogEngine/post/Simple-C-Web-Server under
+This simple Web Server was pulled from https://codehosting.net/blog/BlogEngine/post/Simple-C-DuoWeb-Server under
 The MIT License (MIT)
 
 Copyright (c) 2013 David's Blog (www.codehosting.net) 

@@ -11,7 +11,7 @@ using System.Text;
 
 namespace Duo
 {
-	public static class Web
+	public static class DuoWeb
 	{
 		const string DUO_PREFIX = "TX";
 		const string APP_PREFIX = "APP";

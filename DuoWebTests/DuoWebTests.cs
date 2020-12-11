@@ -31,11 +31,11 @@ namespace DuoWebTests
         [TestInitialize]
         public void SetUp()
         {
-            var request_sig = Web.SignRequest(IKEY, SKEY, AKEY, USER);
+            var request_sig = DuoWeb.SignRequest(IKEY, SKEY, AKEY, USER);
             var sigs = request_sig.Split(':');
             valid_app_sig = sigs[1];
 
-            request_sig = Web.SignRequest(IKEY, SKEY, "invalidinvalidinvalidinvalidinvalidinvalid", USER);
+            request_sig = DuoWeb.SignRequest(IKEY, SKEY, "invalidinvalidinvalidinvalidinvalidinvalid", USER);
             sigs = request_sig.Split(':');
             invalid_app_sig = sigs[1];
         }
@@ -43,7 +43,7 @@ namespace DuoWebTests
         [TestMethod]
         public void TestSign()
         {
-            string request_sig = Web.SignRequest(IKEY, SKEY, AKEY, USER);
+            string request_sig = DuoWeb.SignRequest(IKEY, SKEY, AKEY, USER);
             Assert.IsNotNull(request_sig);
         }
 
@@ -52,91 +52,91 @@ namespace DuoWebTests
         {
             long fake_current_time = 1300157874 - 75;
             DateTime fake_current_dt = new DateTime(1970, 1, 1).AddSeconds(fake_current_time);
-            string request_sig = Web.SignRequest(IKEY, SKEY, AKEY, USER, fake_current_dt);
+            string request_sig = DuoWeb.SignRequest(IKEY, SKEY, AKEY, USER, fake_current_dt);
             Assert.AreEqual(request_sig, OLD_REQUEST);
         }
 
         [TestMethod]
         public void TestSignEmptyUsername()
         {
-            string request_sig = Web.SignRequest(IKEY, SKEY, AKEY, "");
-            Assert.AreEqual(request_sig, Web.ERR_USER);
+            string request_sig = DuoWeb.SignRequest(IKEY, SKEY, AKEY, "");
+            Assert.AreEqual(request_sig, DuoWeb.ERR_USER);
         }
 
         [TestMethod]
         public void TestSignBadUsername()
         {
-            string request_sig = Web.SignRequest(IKEY, SKEY, AKEY, "in|valid");
-            Assert.AreEqual(request_sig, Web.ERR_USER);
+            string request_sig = DuoWeb.SignRequest(IKEY, SKEY, AKEY, "in|valid");
+            Assert.AreEqual(request_sig, DuoWeb.ERR_USER);
         }
 
         [TestMethod]
         public void TestSignBadIkey()
         {
-            string request_sig = Web.SignRequest("invalid", SKEY, AKEY, USER);
-            Assert.AreEqual(request_sig, Web.ERR_IKEY);
+            string request_sig = DuoWeb.SignRequest("invalid", SKEY, AKEY, USER);
+            Assert.AreEqual(request_sig, DuoWeb.ERR_IKEY);
         }
 
         [TestMethod]
         public void TestSignBadSkey()
         {
-            string request_sig = Web.SignRequest(IKEY, "invalid", AKEY, USER);
-            Assert.AreEqual(request_sig, Web.ERR_SKEY);
+            string request_sig = DuoWeb.SignRequest(IKEY, "invalid", AKEY, USER);
+            Assert.AreEqual(request_sig, DuoWeb.ERR_SKEY);
         }
 
         [TestMethod]
         public void TestSignBadAkey()
         {
-            string request_sig = Web.SignRequest(IKEY, SKEY, "invalid", USER);
-            Assert.AreEqual(request_sig, Web.ERR_AKEY);
+            string request_sig = DuoWeb.SignRequest(IKEY, SKEY, "invalid", USER);
+            Assert.AreEqual(request_sig, DuoWeb.ERR_AKEY);
         }
 
         [TestMethod]
         public void TestVerifyInvalidUser()
         {
-            string invalid_user = Web.VerifyResponse(IKEY, SKEY, AKEY, INVALID_RESPONSE + ":" + valid_app_sig);
+            string invalid_user = DuoWeb.VerifyResponse(IKEY, SKEY, AKEY, INVALID_RESPONSE + ":" + valid_app_sig);
             Assert.IsNull(invalid_user);
         }
 
         [TestMethod]
         public void TestVerifyExpiredUser()
         {
-            string expired_user = Web.VerifyResponse(IKEY, SKEY, AKEY, EXPIRED_RESPONSE + ":" + valid_app_sig);
+            string expired_user = DuoWeb.VerifyResponse(IKEY, SKEY, AKEY, EXPIRED_RESPONSE + ":" + valid_app_sig);
             Assert.IsNull(expired_user);
         }
 
         [TestMethod]
         public void TestVerifyFutureUserInvalidAppSig()
         {
-            string future_user = Web.VerifyResponse(IKEY, SKEY, AKEY, FUTURE_RESPONSE + ":" + invalid_app_sig);
+            string future_user = DuoWeb.VerifyResponse(IKEY, SKEY, AKEY, FUTURE_RESPONSE + ":" + invalid_app_sig);
             Assert.IsNull(future_user);
         }
 
         [TestMethod]
         public void TestVerifyFutureUserValidAppSig()
         {
-            string future_user = Web.VerifyResponse(IKEY, SKEY, AKEY, FUTURE_RESPONSE + ":" + valid_app_sig);
+            string future_user = DuoWeb.VerifyResponse(IKEY, SKEY, AKEY, FUTURE_RESPONSE + ":" + valid_app_sig);
             Assert.AreEqual(future_user, USER);
         }
 
         [TestMethod]
         public void TestVerifyFutureUserWrongResponseFormat()
         {
-            string future_user = Web.VerifyResponse(IKEY, SKEY, AKEY, WRONG_PARAMS_RESPONSE + ":" + valid_app_sig);
+            string future_user = DuoWeb.VerifyResponse(IKEY, SKEY, AKEY, WRONG_PARAMS_RESPONSE + ":" + valid_app_sig);
             Assert.IsNull(future_user, USER);
         }
 
         [TestMethod]
         public void TestVerifyFutureUserWrongAppSigFormat()
         {
-            string future_user = Web.VerifyResponse(IKEY, SKEY, AKEY, FUTURE_RESPONSE + ":" + WRONG_PARAMS_APP);
+            string future_user = DuoWeb.VerifyResponse(IKEY, SKEY, AKEY, FUTURE_RESPONSE + ":" + WRONG_PARAMS_APP);
             Assert.IsNull(future_user);
         }
 
         [TestMethod]
         public void TestVerifyFutureUserWrongIkey()
         {
-            string future_user = Web.VerifyResponse(WRONG_IKEY, SKEY, AKEY, FUTURE_RESPONSE + ":" + valid_app_sig);
+            string future_user = DuoWeb.VerifyResponse(WRONG_IKEY, SKEY, AKEY, FUTURE_RESPONSE + ":" + valid_app_sig);
             Assert.IsNull(future_user);
         }
 
@@ -146,7 +146,7 @@ namespace DuoWebTests
             long fake_current_unixtime = 1300157874 - 60;
             DateTime fake_current_dt = new DateTime(1970, 1, 1).AddSeconds(fake_current_unixtime);
 
-            string expired_user = Web.VerifyResponse(IKEY, SKEY, AKEY, EXPIRED_RESPONSE + ":" + OLD_REQUEST_APP_SIG, fake_current_dt);
+            string expired_user = DuoWeb.VerifyResponse(IKEY, SKEY, AKEY, EXPIRED_RESPONSE + ":" + OLD_REQUEST_APP_SIG, fake_current_dt);
             Assert.AreEqual(expired_user, USER);
         }
     }
